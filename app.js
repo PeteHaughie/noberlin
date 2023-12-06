@@ -1,5 +1,7 @@
 const express = require("express");
 const socket = require("socket.io");
+const path = require('path');
+const fs = require('fs');
 
 // App setup
 const PORT = 9000;
@@ -15,7 +17,7 @@ app.use(express.static("public"));
 // Socket setup
 const io = require('socket.io')(server, {
     cors: {
-        origin: "http://localhost:8100",
+        origin: `http://localhost:${PORT}`,
         methods: ["GET", "POST"],
         transports: ['websocket', 'polling'],
         credentials: true
@@ -32,21 +34,29 @@ io.on("connection", function (socket) {
     io.emit("text-message", data);
   });
 
-  // handle files
-  socket.on('file-message', function(name, buffer) {
-    var fs = require('fs');
-
-    //path to store uploaded files (NOTE: presumed you have created the folders)
-    var fileName = __dirname + '/uploads/' + name;
-    fs.open(fileName, 'a', 0755, function(err, fd) {
-        if (err) throw err;
-
-        fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
-            fs.close(fd, function() {
-                console.log('File saved successful!');
-            });
-        })
-    });
+  // listen to text just in case
+  socket.on("text-message", (...args) => {
+    console.log(args);
   });
+
+  // handle files
+  socket.on('file-message', function (name, buffer) {
+    // Use path.join for proper path resolution
+    var filePath = path.join(__dirname, 'uploads', name);
   
+    // Using writeFile which is simpler for this use case
+    fs.writeFile(filePath, buffer, function(err) {
+      if (err) {
+        console.error('Error saving file:', err);
+        return;
+      }
+      console.log('File saved successfully!');
+    });
+  });  
+
+  // listen to file just in case
+  socket.on("file-message", (...args) => {
+    console.log("Filename:", args[0]);
+  });
+
 });
