@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Socket.io simple chat</title>
+    <title>No Berlin</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
@@ -13,10 +13,10 @@
         </div>
       </div>
 
-      <form class="message_form">
-        <textarea type="text" class="message_form__input" placeholder="Type a message"></textarea><br>
+      <form class="message_form" action="/uploads" enctype="multipart/form-data" action="POST">
+        <textarea id="text" type="text" class="message_form__input" placeholder="Type a message"></textarea><br>
         <!-- image upload -->
-        <input id="input-files" type="file" accept="image/png, image/jpeg, image/*;capture=camera">
+        <input id="input-files" type="file" accept="image/">
         <button class="message_form__button" type="submit">Send</button>
       </form>
     </div>

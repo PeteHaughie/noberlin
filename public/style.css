@@ -1,0 +1,14 @@
+body {
+    background: url("./logo.jpeg") center center fixed;
+}
+
+textarea {
+    color: black;
+    font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 30pt;
+    padding: 20px;
+}
+
+textarea::placeholder {
+    color: pink;
+}

@@ -1,64 +1,54 @@
 const socket = io();
-const inputField = document.querySelector(".message_form__input");
-const messageForm = document.querySelector(".message_form");
 
-var filesUpload = null;
-var file = null;
+// Get the form element
+const form = document.querySelector('.message_form');
 
-if (window.File && window.FileReader && window.FileList) {
-  //HTML5 File API ready
-  init();
-} else {
-  //TODO
-}
-
-function init() {
-  // FILE UPLOAD FEATURE
-  filesUpload = document.getElementById('input-files');
-  filesUpload.addEventListener('change', fileHandler, false);
-}
-
-messageForm.addEventListener("submit", (e) => {
+// Add event listener for form submission
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // send file if selected
-  sendFile();
+  // Get the textarea value
+  let textareaValue = document.querySelector('#text').value;
 
-  if (!inputField.value) {
-    return;
+  // Get the file input element
+  const fileInput = document.querySelector('#input-files');
+
+  // Get the selected file
+  const file = fileInput.files[0];
+
+  // Create a FormData object to store the form data
+  const formData = new FormData();
+
+  // Append the textarea value to the FormData object
+  formData.append('textarea', textareaValue);
+  if (textareaValue) {
+    socket.emit("text-message", {
+      message: textareaValue
+    });
+    document.querySelector('#text').value = "";
   }
 
-  socket.emit("text-message", {
-    message: inputField.value
-  });
-  inputField.value = "";
+  // Append the file to the FormData object
+  formData.append('file', file);
+  
+  if(file) {
+    try {
+      // Send the form data to the server using fetch
+      const response = await fetch('/uploads', {
+        method: 'POST',
+        body: formData
+      });
+
+      // Check if the request was successful
+      
+      if (response.ok) {
+        console.log('File uploaded successfully');
+        socket.emit("file-message", {message: file.name});
+      } else {
+        console.error('Error uploading file');
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    }
+  }
 });
-
-socket.on("text-message", function (data) {
-    socket.emit({ message: data.message });
-});
-
-function fileHandler(e) {
-  var files = e.target.files || e.dataTransfer.files;
-
-  if (files) {
-      //send only the first one
-      file = files[0];
-  }
-}
-
-function sendFile() {
-  if (file) {
-    //read the file content and prepare to send it
-    var reader = new FileReader();
-
-    reader.onload = function(e) {
-        console.log('Sending file...');
-        //get all content
-        var buffer = e.target.result;
-        //send the content via socket
-        socket.emit('file-message', file.name, buffer);
-    };
-    reader.readAsBinaryString(file);
-  }
-}
