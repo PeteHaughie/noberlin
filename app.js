@@ -22,7 +22,8 @@ const io = require('socket.io')(server, {
         transports: ['websocket', 'polling'],
         credentials: true
     },
-    allowEIO3: true
+    allowEIO3: true,
+    maxHttpBufferSize: 1e8 // 100MB
 });
 
 const activeUsers = new Set();
@@ -41,6 +42,8 @@ io.on("connection", function (socket) {
 
   // handle files
   socket.on('file-message', function (name, buffer) {
+    console.log('uploading file: ', name);
+
     // Use path.join for proper path resolution
     var filePath = path.join(__dirname, 'uploads', name);
   
@@ -53,10 +56,5 @@ io.on("connection", function (socket) {
       console.log('File saved successfully!');
     });
   });  
-
-  // listen to file just in case
-  socket.on("file-message", (...args) => {
-    console.log("Filename:", args[0]);
-  });
 
 });
