@@ -1,4 +1,13 @@
-const socket = io();
+// Socket bollocks
+const ws = new WebSocket('ws://localhost:9000');
+
+ws.onopen = function() {
+  console.log('Connected to the WebSocket server');
+};
+
+ws.onmessage = function(message) {
+  console.log('Message from server:', message.data);
+};
 
 // Get the form element
 const form = document.querySelector('.message_form');
@@ -22,9 +31,10 @@ form.addEventListener('submit', async (e) => {
   // Append the textarea value to the FormData object
   formData.append('textarea', textareaValue);
   if (textareaValue) {
-    socket.emit("text-message", {
-      message: textareaValue
-    });
+    const _m = {
+      text: textareaValue
+    };
+    ws.send(JSON.stringify(_m));
     document.querySelector('#text').value = "";
   }
 
@@ -40,10 +50,9 @@ form.addEventListener('submit', async (e) => {
       });
 
       // Check if the request was successful
-      
       if (response.ok) {
+        document.querySelector('#input-files').value = "";
         console.log('File uploaded successfully');
-        socket.emit("file-message", {message: file.name});
       } else {
         console.error('Error uploading file');
       }
